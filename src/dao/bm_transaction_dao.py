@@ -70,4 +70,9 @@ class TransactionDAO:
         resp = self._sb.table("bm_transactions").select("*").eq("account_id", account_id).order("transaction_date", desc=True).execute()
         return resp.data or []
 
-
+    def get_all_transactions(self) -> List[Dict]:
+        try:
+            resp = self._sb.table("bm_transactions").select("*").order("transaction_date", desc=True).execute()
+            return resp.data or []
+        except Exception as e:
+            raise TransactionDAOError(f"Failed to fetch all transactions: {e}")

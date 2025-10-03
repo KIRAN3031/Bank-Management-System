@@ -26,3 +26,9 @@ class LoanRepaymentService:
             return self.dao.update_repayment_status(repayment_id, status)
         except LoanRepaymentDAOError as e:
             raise LoanRepaymentServiceError(str(e))
+        
+    def list_all_repayments(self) -> List[Dict]:
+        try:
+            return self.dao.list_all_repayments()
+        except LoanRepaymentDAOError as e:
+            raise LoanRepaymentServiceError(str(e))

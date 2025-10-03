@@ -31,3 +31,10 @@ class LoanService:
     # get loans by customer
     def get_loan_status_by_customer(self, customer_id: int) -> List[Dict]:
         return self.dao.get_loans_by_customer(customer_id)
+    
+    # get all loans
+    def get_all_loans(self) -> List[Dict]:
+        try:
+            return self.dao.get_all_loans()
+        except LoanDAOError as e:
+            raise LoanServiceError(str(e))

@@ -22,4 +22,13 @@ class AccountService:
             raise AccountServiceError(str(e))
 
     def list_accounts(self, customer_id: int) -> List[Dict]:
-        return self.dao.list_accounts_by_customer(customer_id)
+        try:
+            return self.dao.list_accounts_by_customer(customer_id)
+        except AccountDAOError as e:
+            raise AccountServiceError(str(e))
+    
+    def list_all_accounts(self) -> list:
+        try:
+            return self.dao.list_all_accounts()
+        except AccountDAOError as e:
+            raise AccountServiceError(str(e))

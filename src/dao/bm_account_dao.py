@@ -28,3 +28,10 @@ class AccountDAO:
     def list_accounts_by_customer(self, customer_id: int) -> List[Dict]:
         resp = self._sb.table("bm_accounts").select("*").eq("customer_id", customer_id).execute()
         return resp.data or []
+
+    def list_all_accounts(self) -> list:
+        try:
+            resp = self._sb.table("bm_accounts").select("*").execute()
+            return resp.data or []
+        except Exception as e:
+            raise AccountDAOError(f"Failed to list all accounts: {e}")

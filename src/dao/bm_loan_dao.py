@@ -40,7 +40,14 @@ class LoanDAO:
 
     def get_loans_by_customer(self, customer_id: int) -> List[Dict]:
         try:
-            resp = self._sb.table("loans").select("*").eq("customer_id", customer_id).execute()
+            resp = self._sb.table("bm_loans").select("*").eq("customer_id", customer_id).execute()
             return resp.data or []
         except Exception as e:
             raise LoanDAOError(f"Failed to fetch loans for customer {customer_id}: {e}")
+
+    def get_all_loans(self) -> List[Dict]:
+        try:
+            resp = self._sb.table("bm_loans").select("*").execute()
+            return resp.data or []
+        except Exception as e:
+            raise LoanDAOError(f"Failed to fetch all loans: {e}")

@@ -37,3 +37,9 @@ class LoanRepaymentDAO:
         return resp.data[0] if resp.data else None
 
 
+    def list_all_repayments(self) -> List[Dict]:
+        try:
+            resp = self._sb.table("bm_loan_repayments").select("*").order("payment_date", desc=True).execute()
+            return resp.data or []
+        except Exception as e:
+            raise LoanRepaymentDAOError(f"Failed to fetch all repayments: {e}")
