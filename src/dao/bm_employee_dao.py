@@ -29,3 +29,10 @@ class EmployeeDAO:
             return resp.data[0]
         except Exception as e:
             raise EmployeeDAOError(f"Failed to create employee: {e}")
+    
+    def get_employee_by_id(self, employee_id: int) -> Dict:
+        try:
+            resp = self._sb.table("bm_employees").select("*").eq("employee_id", employee_id).limit(1).execute()
+            return resp.data[0] if resp.data else None
+        except Exception as e:
+            raise EmployeeDAOError(f"Failed to get employee by ID: {e}")

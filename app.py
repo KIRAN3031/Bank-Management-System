@@ -10,16 +10,16 @@ from src.services.bm_loan_repayment_service import LoanRepaymentService, LoanRep
 from src.services.bm_employee_service import EmployeeService, EmployeeServiceError
 
 
-st.title("Bank Management System")
+st.title("🏦 Bank Management System")
+
 
 # Initialize all services
 customer_service = CustomerService()
 account_service = AccountService()
+employee_service = EmployeeService()
 transaction_service = TransactionService()
 loan_service = LoanService()
 loan_repayment_service = LoanRepaymentService()
-employee_service = EmployeeService()
-
 
 def load_customers():
     try:
@@ -28,18 +28,15 @@ def load_customers():
         st.error(f"Failed to load customers: {e}")
         return []
 
-
 def load_accounts(customer_id=None):
     try:
         if customer_id:
             return account_service.list_accounts(customer_id)
         else:
-            # Assuming you have a method to list all accounts if no customer_id given
             return account_service.list_all_accounts()
     except AccountServiceError as e:
         st.error(f"Failed to load accounts: {e}")
         return []
-
 
 def load_loans(customer_id=None):
     try:
@@ -51,7 +48,6 @@ def load_loans(customer_id=None):
         st.error(f"Failed to load loans: {e}")
         return []
 
-
 def load_transactions(account_id=None):
     try:
         if account_id:
@@ -61,7 +57,6 @@ def load_transactions(account_id=None):
     except TransactionServiceError as e:
         st.error(f"Failed to load transactions: {e}")
         return []
-
 
 def load_repayments(loan_id=None):
     try:
@@ -73,7 +68,6 @@ def load_repayments(loan_id=None):
         st.error(f"Failed to load repayments: {e}")
         return []
 
-
 def load_employees():
     try:
         return employee_service.list_employees()
@@ -81,11 +75,9 @@ def load_employees():
         st.error(f"Failed to load employees: {e}")
         return []
 
-
 def dashboard():
     st.header("📊 Dashboard")
 
-    # Gather data without filtering for dashboard overview
     customers = load_customers()
     accounts = load_accounts()
     loans = load_loans()
@@ -100,37 +92,34 @@ def dashboard():
     df_repayments = pd.DataFrame(repayments)
     employees = pd.DataFrame(employees_list)
 
-    # Metrics row
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     col1.metric("Customers", len(df_customers))
     col2.metric("Active Accounts", len(df_accounts[df_accounts['status'] == "Active"]) if not df_accounts.empty else 0)
     col3.metric("Total Loans", len(df_loans))
     col4.metric("Transactions", len(df_transactions))
     col5.metric("Repayments", len(df_repayments))
+    col6.metric("Employees", len(employees))
 
-    # Pie Chart: Account Type Distribution
     if not df_accounts.empty and 'account_type' in df_accounts.columns:
         account_types = df_accounts['account_type'].value_counts()
         fig = go.Figure(data=[go.Pie(labels=account_types.index, values=account_types.values, hole=0.4)])
         st.subheader("Account Types Distribution")
         st.plotly_chart(fig, use_container_width=True)
 
-    # Bar Chart: Loans by Type
     if not df_loans.empty and 'loan_type' in df_loans.columns:
         loan_types = df_loans['loan_type'].value_counts()
-        colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3']  # Add more colors if needed
+        colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3']
         fig = go.Figure(data=[go.Bar(
             x=loan_types.index,
             y=loan_types.values,
-            marker_color=colors[:len(loan_types)]  # Slice to match number of bars
+            marker_color=colors[:len(loan_types)]
         )])
         st.subheader("Loans by Type")
         st.plotly_chart(fig, use_container_width=True)
 
-    # Line Chart: Monthly Transactions Trend by Type
     if not df_transactions.empty and 'transaction_date' in df_transactions.columns:
         df_transactions['transaction_date'] = pd.to_datetime(df_transactions['transaction_date'], errors='coerce', utc=True)
-        df_transactions['transaction_date'] = df_transactions['transaction_date'].dt.tz_localize(None)  # Remove timezone
+        df_transactions['transaction_date'] = df_transactions['transaction_date'].dt.tz_localize(None)
         df_transactions['month'] = df_transactions['transaction_date'].dt.to_period('M')
         trend_data = df_transactions.groupby(['month', 'transaction_type']).size().unstack(fill_value=0)
         fig = go.Figure()
@@ -139,14 +128,12 @@ def dashboard():
         st.subheader("Monthly Transaction Trend")
         st.plotly_chart(fig, use_container_width=True)
 
-    # Pie Chart: Loan Repayment Status
     if not df_repayments.empty and 'status' in df_repayments.columns:
         repayment_status = df_repayments['status'].value_counts()
         fig = go.Figure(data=[go.Pie(labels=repayment_status.index, values=repayment_status.values)])
         st.subheader("Loan Repayment Status")
         st.plotly_chart(fig, use_container_width=True)
 
-    # Bar Chart: Employee roles distribution
     if not employees.empty and 'role' in employees.columns:
         role_counts = employees['role'].value_counts()
         colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3']
@@ -158,7 +145,6 @@ def dashboard():
         st.subheader("Employee Roles Distribution")
         st.plotly_chart(fig, use_container_width=True)
 
-    # Interactive Table Selector
     st.subheader("View Raw Data")
     table_option = st.selectbox("Select Table to View", options=["Customers", "Accounts", "Loans", "Transactions", "Repayments", "Employees"])
     if table_option == "Customers":
@@ -245,51 +231,63 @@ def main():
 
     elif menu == "Transactions":
         st.header("Transactions")
+
+        # Load customers
         customers = load_customers()
-        cust_options = [f"{c['customer_id']} - {c['name']}" for c in customers]
-        selected_cust = st.selectbox("Select Customer", cust_options)
-        if selected_cust:
-            cust_id = int(selected_cust.split(" - ")[0])
-            accounts = load_accounts(cust_id)
-            acc_options = [f"{a['account_id']} - {a['account_type']}" for a in accounts]
-            selected_acc = st.selectbox("Select Account", acc_options)
-            if selected_acc:
-                acc_id = int(selected_acc.split(" - ")[0])
-                transactions = load_transactions(acc_id)
-                st.dataframe(transactions)
-                st.subheader("Deposit Money")
-                with st.form("deposit_form"):
-                    dep_amount = st.number_input("Deposit Amount", min_value=0.01, format="%.2f")
-                    dep_submit = st.form_submit_button("Deposit")
-                    if dep_submit:
-                        try:
-                            transaction_service.deposit(acc_id, dep_amount)
-                            st.success("Deposit successful!")
-                        except TransactionServiceError as e:
-                            st.error(f"Deposit failed: {e}")
+        if not customers:
+            st.warning("No customers found.")
+        else:
+            cust_options = [f"{c['customer_id']} - {c['name']}" for c in customers]
+            selected_cust = st.selectbox("Select Customer", cust_options)
+            if selected_cust:
+                cust_id = int(selected_cust.split(" - ")[0])
+                accounts = load_accounts(cust_id)
+                if not accounts:
+                    st.warning(f"No accounts found for customer {cust_id}")
+                else:
+                    acc_options = [f"{a['account_id']} - {a['account_type']}" for a in accounts]
+                    selected_acc = st.selectbox("Select Account", acc_options)
+                    if selected_acc:
+                        acc_id = int(selected_acc.split(" - ")[0])
+                        transactions = load_transactions(acc_id)
+                        st.dataframe(transactions)
 
-                st.subheader("Withdraw Money")
-                with st.form("withdraw_form"):
-                    wd_amount = st.number_input("Withdraw Amount", min_value=0.01, format="%.2f")
-                    wd_submit = st.form_submit_button("Withdraw")
-                    if wd_submit:
-                        try:
-                            transaction_service.withdraw(acc_id, wd_amount)
-                            st.success("Withdrawal successful!")
-                        except TransactionServiceError as e:
-                            st.error(f"Withdrawal failed: {e}")
+                        # Deposit form
+                        st.subheader("💰 Deposit Money")
+                        with st.form("deposit_form"):
+                            dep_amount = st.number_input("Deposit Amount", min_value=0.01, format="%.2f")
+                            dep_submit = st.form_submit_button("Deposit")
+                            if dep_submit:
+                                try:
+                                    transaction_service.deposit(acc_id, dep_amount)
+                                    st.success("Deposit successful!")
+                                except Exception as e:
+                                    st.error(f"Deposit failed: {e}")
 
-                st.subheader("Transfer Money")
-                with st.form("transfer_form"):
-                    to_acc = st.number_input("To Account ID", min_value=1)
-                    trans_amount = st.number_input("Transfer Amount", min_value=0.01, format="%.2f")
-                    trans_submit = st.form_submit_button("Transfer")
-                    if trans_submit:
-                        try:
-                            transaction_service.transfer(acc_id, int(to_acc), trans_amount)
-                            st.success("Transfer successful!")
-                        except TransactionServiceError as e:
-                            st.error(f"Transfer failed: {e}")
+                        # Withdraw form
+                        st.subheader("💸 Withdraw Money")
+                        with st.form("withdraw_form"):
+                            wd_amount = st.number_input("Withdraw Amount", min_value=0.01, format="%.2f")
+                            wd_submit = st.form_submit_button("Withdraw")
+                            if wd_submit:
+                                try:
+                                    transaction_service.withdraw(acc_id, wd_amount)
+                                    st.success("Withdrawal successful!")
+                                except Exception as e:
+                                    st.error(f"Withdrawal failed: {e}")
+
+                        # Transfer form
+                        st.subheader("💳 Transfer Money")
+                        with st.form("transfer_form"):
+                            to_acc = st.number_input("To Account ID", min_value=1)
+                            trans_amount = st.number_input("Transfer Amount", min_value=0.01, format="%.2f")
+                            trans_submit = st.form_submit_button("Transfer")
+                            if trans_submit:
+                                try:
+                                    transaction_service.transfer(acc_id, int(to_acc), trans_amount)
+                                    st.success("Transfer successful!")
+                                except Exception as e:
+                                    st.error(f"Transfer failed: {e}")
 
     elif menu == "Loan Repayments":
         st.header("Loan Repayments")

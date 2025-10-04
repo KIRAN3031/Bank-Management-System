@@ -1,4 +1,3 @@
-# service/bm_transaction_service.py
 from typing import List, Dict
 from src.dao.bm_transaction_dao import TransactionDAO, TransactionDAOError
 
@@ -29,7 +28,7 @@ class TransactionService:
 
     def get_transaction_history(self, account_id: int) -> List[Dict]:
         return self.dao.get_transactions_by_account(account_id)
-    
+
     def get_all_transactions(self) -> List[Dict]:
         try:
             return self.dao.get_all_transactions()

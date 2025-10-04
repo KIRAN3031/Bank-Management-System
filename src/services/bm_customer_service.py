@@ -1,6 +1,7 @@
 from typing import Optional, List, Dict
 from src.dao.bm_customer_dao import CustomerDAO, CustomerDAOError
 
+
 class CustomerServiceError(Exception):
     pass
 
