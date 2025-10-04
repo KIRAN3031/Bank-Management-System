@@ -19,7 +19,13 @@ class LoanDAO:
             "interest_rate": interest_rate,
             "status": "PENDING"
         }
-        self._sb.table("bm_loans").insert(payload).execute()
+        # Log payload for debugging
+        print("Applying for loan with payload:", payload)
+        try:
+            self._sb.table("bm_loans").insert(payload).execute()
+        except Exception as e:
+            # Raise error with detailed message
+            raise LoanDAOError(f"Failed to apply for loan: {e}")
         resp = self._sb.table("bm_loans").select("*").eq("customer_id", customer_id).order("loan_id", desc=True).limit(1).execute()
         return resp.data[0] if resp.data else None
 
