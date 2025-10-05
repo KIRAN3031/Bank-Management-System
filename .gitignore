@@ -1,1 +1,2 @@
-*.env
+# how to hide the .env file
+.env
